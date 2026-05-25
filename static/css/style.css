@@ -788,6 +788,16 @@ a { color: inherit; text-decoration: none; }
     color: var(--ink);
 }
 
+.date-filter-form {
+    margin-left: auto;
+}
+
+.filter-input {
+    width: auto;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
+
 /* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
