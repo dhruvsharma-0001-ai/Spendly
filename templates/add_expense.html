@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense - Spendly{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Add Expense</h1>
+            <p class="auth-subtitle">Keep track of your spending</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                  <i data-lucide="{{ 'alert-circle' if category == 'error' else 'check-circle' }}"></i>
+                  <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('add_expense_route') }}" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="amount" class="form-label">Amount (₹)</label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0.01" required placeholder="0.00" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="category" required class="form-input">
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="Food">Food</option>
+                    <option value="Bills">Bills</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Health">Health</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" id="date" name="date" required value="{{ today }}" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description (Optional)</label>
+                <input type="text" id="description" name="description" placeholder="e.g., Weekly groceries" class="form-input">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+                <span>Add Expense</span>
+                <i data-lucide="plus"></i>
+            </button>
+            
+            <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-full" style="margin-top: 1rem;">
+                Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

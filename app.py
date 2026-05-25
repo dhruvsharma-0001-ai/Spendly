@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import init_db, seed_db, get_db
+from database.db import init_db, seed_db, get_db, add_expense
 import sqlite3
 from datetime import datetime
 
@@ -187,9 +187,38 @@ def expenses():
     return render_template("expenses.html", expenses=all_expenses)
 
 
-@app.route("/expenses/add")
-def add_expense():
-    return "Add expense — coming in Step 7"
+@app.route("/expenses/add", methods=["GET", "POST"])
+def add_expense_route():
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    if request.method == "POST":
+        amount = request.form.get("amount")
+        category = request.form.get("category")
+        date = request.form.get("date")
+        description = request.form.get("description")
+
+        if not amount or not category or not date:
+            flash("Amount, category, and date are required.", "error")
+        else:
+            try:
+                amount = float(amount)
+                if amount <= 0:
+                    flash("Amount must be a positive number.", "error")
+                else:
+                    # Validate date format
+                    datetime.strptime(date, '%Y-%m-%d')
+                    
+                    add_expense(session['user_id'], amount, category, date, description)
+                    flash("Expense added successfully!", "success")
+                    return redirect(url_for('profile'))
+            except ValueError:
+                flash("Invalid amount or date format.", "error")
+            except Exception:
+                flash("An error occurred while saving the expense.", "error")
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    return render_template("add_expense.html", today=today)
 
 
 @app.route("/expenses/<int:id>/edit")

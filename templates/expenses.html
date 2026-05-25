@@ -6,7 +6,13 @@
 <div class="profile-container">
     <div class="section-header" style="margin-bottom: 2rem;">
         <h2>All Expenses</h2>
-        <a href="{{ url_for('profile') }}" class="btn-ghost btn-sm">Back to Profile</a>
+        <div class="header-actions">
+            <a href="{{ url_for('add_expense_route') }}" class="btn btn-primary btn-sm">
+                <i data-lucide="plus"></i>
+                <span>Add Expense</span>
+            </a>
+            <a href="{{ url_for('profile') }}" class="btn-ghost btn-sm">Back to Profile</a>
+        </div>
     </div>
 
     <div class="profile-section">

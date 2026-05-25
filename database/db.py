@@ -83,3 +83,16 @@ def seed_db():
 
     conn.commit()
     conn.close()
+
+def add_expense(user_id, amount, category, date, description):
+    """Inserts a new expense into the database with proper resource cleanup."""
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+            (user_id, amount, category, date, description)
+        )
+        conn.commit()
+    finally:
+        conn.close()
