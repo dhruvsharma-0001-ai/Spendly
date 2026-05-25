@@ -125,10 +125,41 @@ def profile():
     
     cursor.execute("SELECT amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 5", (session['user_id'],))
     recent_expenses = cursor.fetchall()
+
+    cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ?", (session['user_id'],))
+    total_spent = cursor.fetchone()[0] or 0.0
+
+    cursor.execute("SELECT category, COUNT(*) as count FROM expenses WHERE user_id = ? GROUP BY category ORDER BY count DESC LIMIT 1", (session['user_id'],))
+    top_category_row = cursor.fetchone()
+    top_category = top_category_row['category'] if top_category_row else "None"
+
+    cursor.execute("SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC", (session['user_id'],))
+    category_data = cursor.fetchall()
     
     db.close()
     
-    return render_template("profile.html", user=user, recent_expenses=recent_expenses)
+    return render_template("profile.html", 
+                           user=user, 
+                           recent_expenses=recent_expenses, 
+                           total_spent=total_spent, 
+                           top_category=top_category, 
+                           category_data=category_data)
+
+
+@app.route("/expenses")
+def expenses():
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+        
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute("SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC, id DESC", (session['user_id'],))
+    all_expenses = cursor.fetchall()
+    
+    db.close()
+    
+    return render_template("expenses.html", expenses=all_expenses)
 
 
 @app.route("/expenses/add")
