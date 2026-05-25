@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import init_db, seed_db, get_db
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'dev-secret-key-for-spendly-step-03'
@@ -117,23 +118,46 @@ def profile():
     if "user_id" not in session:
         return redirect(url_for('login'))
         
+    now = datetime.now()
+    try:
+        month = request.args.get('month')
+        year = request.args.get('year')
+        
+        if month is None or year is None:
+            # Check if there is a 'month_year' combined input
+            month_year = request.args.get('month_year')
+            if month_year:
+                year, month = map(int, month_year.split('-'))
+            else:
+                month = now.month
+                year = now.year
+        else:
+            month = int(month)
+            year = int(year)
+    except ValueError:
+        month = now.month
+        year = now.year
+
+    date_filter = f"{year}-{month:02d}-%"
+    current_filter = f"{year}-{month:02d}"
+
     db = get_db()
     cursor = db.cursor()
     
     cursor.execute("SELECT name, email, created_at FROM users WHERE id = ?", (session['user_id'],))
     user = cursor.fetchone()
     
-    cursor.execute("SELECT amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 5", (session['user_id'],))
+    cursor.execute("SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date LIKE ? ORDER BY date DESC, id DESC LIMIT 5", (session['user_id'], date_filter))
     recent_expenses = cursor.fetchall()
 
-    cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ?", (session['user_id'],))
+    cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ? AND date LIKE ?", (session['user_id'], date_filter))
     total_spent = cursor.fetchone()[0] or 0.0
 
-    cursor.execute("SELECT category, COUNT(*) as count FROM expenses WHERE user_id = ? GROUP BY category ORDER BY count DESC LIMIT 1", (session['user_id'],))
+    cursor.execute("SELECT category, COUNT(*) as count FROM expenses WHERE user_id = ? AND date LIKE ? GROUP BY category ORDER BY count DESC LIMIT 1", (session['user_id'], date_filter))
     top_category_row = cursor.fetchone()
     top_category = top_category_row['category'] if top_category_row else "None"
 
-    cursor.execute("SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC", (session['user_id'],))
+    cursor.execute("SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? AND date LIKE ? GROUP BY category ORDER BY total DESC", (session['user_id'], date_filter))
     category_data = cursor.fetchall()
     
     db.close()
@@ -143,7 +167,8 @@ def profile():
                            recent_expenses=recent_expenses, 
                            total_spent=total_spent, 
                            top_category=top_category, 
-                           category_data=category_data)
+                           category_data=category_data,
+                           current_filter=current_filter)
 
 
 @app.route("/expenses")

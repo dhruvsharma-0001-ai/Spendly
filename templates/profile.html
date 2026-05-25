@@ -13,6 +13,9 @@
             <p class="profile-email">{{ user.email }}</p>
             <p class="profile-member-since">Member since {{ user.created_at[:10] }}</p>
         </div>
+        <form class="date-filter-form" method="GET" action="{{ url_for('profile') }}">
+            <input type="month" name="month_year" value="{{ current_filter }}" class="form-input filter-input" onchange="this.form.submit()">
+        </form>
     </div>
 
     <div class="profile-stats">
