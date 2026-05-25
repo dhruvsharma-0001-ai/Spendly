@@ -114,7 +114,21 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+        
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute("SELECT name, email, created_at FROM users WHERE id = ?", (session['user_id'],))
+    user = cursor.fetchone()
+    
+    cursor.execute("SELECT amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 5", (session['user_id'],))
+    recent_expenses = cursor.fetchall()
+    
+    db.close()
+    
+    return render_template("profile.html", user=user, recent_expenses=recent_expenses)
 
 
 @app.route("/expenses/add")
