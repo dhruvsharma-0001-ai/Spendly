@@ -57,7 +57,13 @@
     <div class="profile-section">
         <div class="section-header">
             <h2>Recent Activity</h2>
-            <a href="{{ url_for('expenses') }}" class="btn-ghost btn-sm">View all</a>
+            <div class="header-actions">
+                <a href="{{ url_for('add_expense_route') }}" class="btn btn-primary btn-sm">
+                    <i data-lucide="plus"></i>
+                    <span>Add Expense</span>
+                </a>
+                <a href="{{ url_for('expenses') }}" class="btn-ghost btn-sm">View all</a>
+            </div>
         </div>
         
         {% if recent_expenses %}
