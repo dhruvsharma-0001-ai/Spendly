@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}All Expenses - Spendly{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="section-header" style="margin-bottom: 2rem;">
+        <h2>All Expenses</h2>
+        <a href="{{ url_for('profile') }}" class="btn-ghost btn-sm">Back to Profile</a>
+    </div>
+
+    <div class="profile-section">
+        {% if expenses %}
+        <div class="activity-list">
+            {% for expense in expenses %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i data-lucide="receipt"></i>
+                </div>
+                <div class="activity-details">
+                    <p class="activity-desc">{{ expense.description or expense.category }}</p>
+                    <p class="activity-date">{{ expense.date }} &bull; {{ expense.category }}</p>
+                </div>
+                <div class="activity-amount negative">
+                    -₹{{ "%.2f"|format(expense.amount) }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="receipt"></i>
+            <p>No expenses found. Start tracking your spending!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

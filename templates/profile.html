@@ -15,10 +15,46 @@
         </div>
     </div>
 
+    <div class="profile-stats">
+        <div class="stat-card">
+            <span class="stat-label">Total Spent</span>
+            <span class="stat-value">₹{{ "%.2f"|format(total_spent) }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Top Category</span>
+            <span class="stat-value">{{ top_category }}</span>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <div class="section-header">
+            <h2>Categorization</h2>
+        </div>
+        {% if category_data %}
+        <div class="category-chart">
+            {% set max_total = category_data[0].total %}
+            {% for cat in category_data %}
+            <div class="chart-row">
+                <span class="chart-label">{{ cat.category }}</span>
+                <div class="chart-bar-container">
+                    <div class="chart-bar" style="width: {{ (cat.total / max_total * 100)|round }}%;"></div>
+                </div>
+                <span class="chart-value">₹{{ "%.2f"|format(cat.total) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="pie-chart"></i>
+            <p>No category data available.</p>
+        </div>
+        {% endif %}
+    </div>
+
     <div class="profile-section">
         <div class="section-header">
             <h2>Recent Activity</h2>
-            <a href="#" class="btn-ghost btn-sm">View all</a>
+            <a href="{{ url_for('expenses') }}" class="btn-ghost btn-sm">View all</a>
         </div>
         
         {% if recent_expenses %}
