@@ -96,3 +96,42 @@ def add_expense(user_id, amount, category, date, description):
         conn.commit()
     finally:
         conn.close()
+
+def get_expense(expense_id, user_id):
+    """Fetches a single expense while ensuring it belongs to the authenticated user."""
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, amount, category, date, description FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id)
+        )
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+def update_expense(expense_id, user_id, amount, category, date, description):
+    """Updates an existing expense record while ensuring it belongs to the authenticated user."""
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE expenses SET amount = ?, category = ?, date = ?, description = ? WHERE id = ? AND user_id = ?",
+            (amount, category, date, description, expense_id, user_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def delete_expense(expense_id, user_id):
+    """Deletes an expense record while ensuring it belongs to the authenticated user."""
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()

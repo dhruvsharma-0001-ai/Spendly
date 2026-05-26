@@ -19,13 +19,14 @@
                 <span class="brand-name">Spendly</span>
             </a>
             <div class="nav-links">
+                {% if session.user_id %}
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('expenses') }}">Expenses</a>
+                <a href="{{ url_for('logout') }}" class="nav-cta">Logout</a>
+                {% else %}
                 <a href="#features">Features</a>
                 <a href="#pricing">Pricing</a>
                 <a href="#about">About</a>
-                {% if session.user_id %}
-                <a href="{{ url_for('profile') }}">Profile</a>
-                <a href="{{ url_for('logout') }}" class="nav-cta">Logout</a>
-                {% else %}
                 <a href="{{ url_for('login') }}">Sign in</a>
                 <a href="{{ url_for('register') }}" class="nav-cta">Get started</a>
                 {% endif %}
@@ -34,6 +35,19 @@
     </nav>
 
     <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages-container" style="max-width: var(--container-width); margin: 0 auto 1.5rem; padding: 0 var(--spacing-md);">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                    <i data-lucide="{{ 'alert-circle' if category == 'error' else 'check-circle' }}"></i>
+                    <span>{{ message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
 
