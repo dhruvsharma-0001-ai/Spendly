@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import init_db, seed_db, get_db, add_expense
+from database.db import init_db, seed_db, get_db, add_expense, get_expense, update_expense, delete_expense
 import sqlite3
 from datetime import datetime
 
@@ -147,7 +147,7 @@ def profile():
     cursor.execute("SELECT name, email, created_at FROM users WHERE id = ?", (session['user_id'],))
     user = cursor.fetchone()
     
-    cursor.execute("SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date LIKE ? ORDER BY date DESC, id DESC LIMIT 5", (session['user_id'], date_filter))
+    cursor.execute("SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date LIKE ? ORDER BY date DESC, id DESC LIMIT 5", (session['user_id'], date_filter))
     recent_expenses = cursor.fetchall()
 
     cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ? AND date LIKE ?", (session['user_id'], date_filter))
@@ -221,14 +221,52 @@ def add_expense_route():
     return render_template("add_expense.html", today=today)
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    expense = get_expense(id, session['user_id'])
+    if not expense:
+        flash("Expense not found or unauthorized.", "error")
+        return redirect(url_for('expenses'))
+
+    if request.method == "POST":
+        amount = request.form.get("amount")
+        category = request.form.get("category")
+        date = request.form.get("date")
+        description = request.form.get("description")
+
+        if not amount or not category or not date:
+            flash("Amount, category, and date are required.", "error")
+        else:
+            try:
+                amount = float(amount)
+                if amount <= 0:
+                    flash("Amount must be a positive number.", "error")
+                else:
+                    # Validate date format
+                    datetime.strptime(date, '%Y-%m-%d')
+                    
+                    update_expense(id, session['user_id'], amount, category, date, description)
+                    flash("Expense updated successfully!", "success")
+                    return redirect(url_for('expenses'))
+            except ValueError:
+                flash("Invalid amount or date format.", "error")
+            except Exception:
+                flash("An error occurred while updating the expense.", "error")
+
+    return render_template("edit_expense.html", expense=expense)
 
 
-@app.route("/expenses/<int:id>/delete")
-def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+@app.route("/expenses/<int:id>/delete", methods=["POST"])
+def delete_expense_route(id):
+    if "user_id" not in session:
+        return redirect(url_for('login'))
+
+    delete_expense(id, session['user_id'])
+    flash("Expense deleted successfully!", "success")
+    return redirect(request.referrer or url_for('expenses'))
 
 
 if __name__ == "__main__":
